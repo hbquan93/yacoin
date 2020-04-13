@@ -1375,37 +1375,31 @@ CBigNum inline GetProofOfStakeLimit(int nHeight, unsigned int nTime)
 {
     const ::int32_t
         nYac20BlockNumber = 0;  //2960;
-    const int
-        nAverageBlocksPerMinute = 1;
 #ifdef Yac1dot0
+    ::int64_t nBlockRewardExcludeFees;
     if(
        pindexBest->nHeight >= nYac20BlockNumber
       )
     {
-        const int 
-            nNumberOfDaysPerYear = 365,
-            nNumberOfBlocksPerYear = (nAverageBlocksPerMinute * 
-                                      nMinutesperHour * 
-                                      nHoursPerDay * 
-                                      nNumberOfDaysPerYear
-                                     ) +    // that 1/4 of a day for leap years
-                                     (nAverageBlocksPerMinute * 
-                                      nMinutesperHour * 
-                                      (nHoursPerDay/4)
-                                     );
-        const double
-            nInflation = 0.02;      // 2%
+        // Default: nEpochInterval = 21000 blocks, recalculated with each epoch
+        if (pindexBest->nHeight % nEpochInterval == 0)
+        {
+            // recalculated
+            // PoW reward is 2%
+            nBlockRewardExcludeFees = (::int64_t)
+                (
+                (pindexBest->pprev? pindexBest->pprev->nMoneySupply:
+                    nSimulatedMOneySupplyAtFork) /
+                    nNumberOfBlocksPerYear
+                ) * nInflation;
+        } else
+        {
+            nBlockRewardExcludeFees = (::int64_t)
+                (pindexBest->pprev? pindexBest->pprev->nBlockRewardExcludeFees: 0);
+        }
 
-        // PoW reward is 2%
-        ::int64_t
-            nBlockReward = (::int64_t)
-            (
-             (
-              (pindexBest->pprev? pindexBest->pprev->nMoneySupply: 0) / 
-              nNumberOfBlocksPerYear
-             ) * nInflation
-            ) + nFees;
-        return nBlockReward;
+        pindexBest->nBlockRewardExcludeFees = nBlockRewardExcludeFees;
+        return nBlockRewardExcludeFees + nFees;
     }
 #endif
     CBigNum bnSubsidyLimit = MAX_MINT_PROOF_OF_WORK;
