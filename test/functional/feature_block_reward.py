@@ -51,7 +51,7 @@ class MiningTest(BitcoinTestFramework):
         info = self.nodes[0].getinfo()
         print(info)
         blockreward= [Decimal('4.7327100000000000')]*10 + [Decimal('4.7327120000000000')]*10 + [Decimal('4.7327130000000000')]*10
-        moneysupply= [Decimal('124460820.773591'),
+        moneysupply= [
             Decimal('124460825.506301'),
             Decimal('124460830.239011'),
             Decimal('124460834.971721'),
@@ -81,7 +81,8 @@ class MiningTest(BitcoinTestFramework):
             Decimal('124460948.556802'),
             Decimal('124460953.289515'),
             Decimal('124460958.022228'),
-            Decimal('124460962.754941')]
+            Decimal('124460962.754941'),
+            Decimal('124460967.487656')]
 
         for t in range(0,10):
             print("calculating block "+str(t+1))
