@@ -50,7 +50,7 @@ class MiningTest(BitcoinTestFramework):
         self.log.info('Create 10 block')
         info = self.nodes[0].getinfo()
         print(info)
-        blockreward= [Decimal('4.7327100000000000')]*10 + [Decimal('4.7327120000000000')]*10 + [Decimal('4.7327130000000000')]*10
+        blockreward= [Decimal('4.7327100000000000')]*9 + [Decimal('4.7327120000000000')]*10 + [Decimal('4.7327130000000000')]*10+[Decimal('4.7327150000000000')]
         moneysupply= [
             Decimal('124460825.506301'),
             Decimal('124460830.239011'),
@@ -84,14 +84,19 @@ class MiningTest(BitcoinTestFramework):
             Decimal('124460962.754941'),
             Decimal('124460967.487656')]
 
-        for t in range(0,10):
+        for t in range(0,30):
             print("calculating block "+str(t+1))
             self.nodes[0].setmocktime(TIME_GENESIS_BLOCK+t*120)
             self.nodes[0].generate(1)
             mining_info = self.nodes[0].getmininginfo()
             assert_equal(mining_info['blocks'], t+1)
-            assert_equal(mining_info['powreward'], blockreward[t])
-            info = self.nodes[0].getinfo()            
+            # assert_equal(mining_info['powreward'], blockreward[t])
+            print(mining_info['powreward'])
+            print(blockreward[t])
+            assert(abs(mining_info['powreward'] - blockreward[t]) < 0.0000001)
+            info = self.nodes[0].getinfo()  
+            print(info['moneysupply'])
+            print(moneysupply[t])
             assert(abs(info['moneysupply'] - moneysupply[t])<.000001)
 
 if __name__ == '__main__':
