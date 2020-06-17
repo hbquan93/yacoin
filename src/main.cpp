@@ -1311,7 +1311,9 @@ CBigNum inline GetProofOfStakeLimit(int nHeight, unsigned int nTime)
 {
     const ::int32_t
         nYac20BlockNumber = 0;  //2960;
+
 #ifdef Yac1dot0
+    static ::int32_t previousBlock = pindexBest->nHeight;
     if (fGetRewardOfBestHeightBlock)
     {
        return (::int64_t)nBlockRewardPrev
@@ -1325,7 +1327,7 @@ CBigNum inline GetProofOfStakeLimit(int nHeight, unsigned int nTime)
     {
         ::int64_t nBlockRewardExcludeFees;
         // Default: nEpochInterval = 21000 blocks, recalculated with each epoch
-        if ((pindexBest->nHeight + 1) % nEpochInterval == 0)
+        if ((pindexBest->nHeight + 1) % nEpochInterval == 0 || previousBlock > pindexBest->nHeight)
         {
             // recalculated
             // PoW reward is 2%
@@ -1338,6 +1340,7 @@ CBigNum inline GetProofOfStakeLimit(int nHeight, unsigned int nTime)
                                         ? nBlockRewardPrev
                                         : (nSimulatedMOneySupplyAtFork * nInflation / nNumberOfBlocksPerYear);
         }
+        previousBlock = pindexBest->nHeight;
         return nBlockRewardExcludeFees;
     }
 #endif
