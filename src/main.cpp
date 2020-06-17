@@ -1327,7 +1327,7 @@ CBigNum inline GetProofOfStakeLimit(int nHeight, unsigned int nTime)
     {
         ::int64_t nBlockRewardExcludeFees;
         // Default: nEpochInterval = 21000 blocks, recalculated with each epoch
-        if ((pindexBest->nHeight + 1) % nEpochInterval == 0))
+        if ((pindexBest->nHeight + 1) % nEpochInterval == 0)
         {
             // recalculated
             // PoW reward is 2%
