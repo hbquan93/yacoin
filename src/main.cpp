@@ -1313,7 +1313,7 @@ CBigNum inline GetProofOfStakeLimit(int nHeight, unsigned int nTime)
         nYac20BlockNumber = 0;  //2960;
 
 #ifdef Yac1dot0
-    static ::int32_t previousBlock = pindexBest->nHeight;
+    static ::int32_t previousBlockHeight = pindexBest->nHeight;
     if (fGetRewardOfBestHeightBlock)
     {
        return (::int64_t)nBlockRewardPrev
@@ -1327,11 +1327,23 @@ CBigNum inline GetProofOfStakeLimit(int nHeight, unsigned int nTime)
     {
         ::int64_t nBlockRewardExcludeFees;
         // Default: nEpochInterval = 21000 blocks, recalculated with each epoch
-        if ((pindexBest->nHeight + 1) % nEpochInterval == 0 || previousBlock > pindexBest->nHeight)
+        if ((pindexBest->nHeight + 1) % nEpochInterval == 0))
         {
             // recalculated
             // PoW reward is 2%
             nBlockRewardExcludeFees = (::int64_t)(pindexBest->nMoneySupply * nInflation / nNumberOfBlocksPerYear);
+            nBlockRewardPrev = nBlockRewardExcludeFees;
+        }
+        else if (previousBlockHeight > pindexBest->nHeight) // reorg case
+        {
+            const CBlockIndex* pindexFirst = pindexBest;
+            // Go back to the first block used for calculating block reward of current epoch
+            int32_t numberOfBlockToGoBack = pindexBest->nHeight - ((pindexBest->nHeight + 1) % nEpochInterval);
+            for (int i = 0; pindexFirst && i < numberOfBlockToGoBack; ++i)
+            {
+                pindexFirst = pindexFirst->pprev;
+            }
+            nBlockRewardExcludeFees = (::int64_t)(pindexFirst->nMoneySupply * nInflation / nNumberOfBlocksPerYear);
             nBlockRewardPrev = nBlockRewardExcludeFees;
         }
         else
@@ -1340,7 +1352,7 @@ CBigNum inline GetProofOfStakeLimit(int nHeight, unsigned int nTime)
                                         ? nBlockRewardPrev
                                         : (nSimulatedMOneySupplyAtFork * nInflation / nNumberOfBlocksPerYear);
         }
-        previousBlock = pindexBest->nHeight;
+        previousBlockHeight = pindexBest->nHeight;
         return nBlockRewardExcludeFees;
     }
 #endif
