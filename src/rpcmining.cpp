@@ -145,33 +145,67 @@ Value getmininginfo(const Array& params, bool fHelp)
 
     Object obj, diff, weight;
     obj.push_back(Pair("blocks",        (int)nBestHeight));
+    printf("TACA ===> getmininginfo, nBestHeight = %d\n", nBestHeight);
+
     obj.push_back(Pair("currentblocksize",(Value_type)nLastBlockSize));
+    printf("TACA ===> getmininginfo, nLastBlockSize = %lld\n", nLastBlockSize);
+
     obj.push_back(Pair("currentblocktx",(Value_type)nLastBlockTx));
+    printf("TACA ===> getmininginfo, nLastBlockTx = %lld\n", nLastBlockTx);
 
     diff.push_back(Pair("proof-of-work",        GetDifficulty()));
+    printf("TACA ===> getmininginfo, proof-of-work = %f\n", GetDifficulty());
+
     diff.push_back(Pair("proof-of-stake",       GetDifficulty(GetLastBlockIndex(pindexBest, true))));
+    printf("TACA ===> getmininginfo, proof-of-stake = %f\n", GetDifficulty(GetLastBlockIndex(pindexBest, true)));
+
     diff.push_back(Pair("search-interval",      (Value_type)nLastCoinStakeSearchInterval));
+    printf("TACA ===> getmininginfo, search-interval = %u\n", nLastCoinStakeSearchInterval);
+
     obj.push_back(Pair("difficulty",    diff));
 
     // YACOIN TODO - May need to re-enable blockvalue if used in any custom api's
     // obj.push_back(Pair("blockvalue",    (uint64_t)GetProofOfWorkReward(GetLastBlockIndex(pindexBest, false)->nBits)));
     // WM - Report current Proof-of-Work block reward.
     obj.push_back(Pair("powreward", (Value_type)GetProofOfWorkReward(GetLastBlockIndex(pindexBest, false)->nBits, 0, true) / 1000000.0));
+    printf("TACA ===> getmininginfo, powreward = %lld\n", GetProofOfWorkReward(GetLastBlockIndex(pindexBest, false)->nBits, 0, true) / 1000000.0);
+
     obj.push_back(Pair("netmhashps",     GetPoWMHashPS()));
+    printf("TACA ===> getmininginfo, netmhashps = %f\n",  GetPoWMHashPS());
+
     obj.push_back(Pair("netstakeweight", GetPoSKernelPS()));
+    printf("TACA ===> getmininginfo, netstakeweight = %f\n", GetPoSKernelPS());
+
     obj.push_back(Pair("errors",        GetWarnings("statusbar")));
+    printf("TACA ===> getmininginfo, GetWarnings(statusbar) = %s\n", GetWarnings("statusbar").c_str());
+
     obj.push_back(Pair("generate",      GetBoolArg("-gen")));
+    printf("TACA ===> getmininginfo, generate = %d\n",  GetBoolArg("-gen"));
+
     obj.push_back(Pair("genproclimit",  (int)GetArg("-genproclimit", -1)));
+    printf("TACA ===> getmininginfo, genproclimit = %lld\n", GetArg("-genproclimit", -1));
+
     obj.push_back(Pair("hashespersec",  gethashespersec(params, false)));
+    printf("TACA ===> getmininginfo, hashespersec\n");
+
     obj.push_back(Pair("pooledtx",      (Value_type)mempool.size()));
+    printf("TACA ===> getmininginfo, pooledtx = %lld\n", mempool.size());
 
     weight.push_back(Pair("kernelsrate",   nKernelsRate));
+    printf("TACA ===> getmininginfo, kernelsrate = %f\n", nKernelsRate);
+
     weight.push_back(Pair("cdaysrate",   nCoinDaysRate));
+    printf("TACA ===> getmininginfo, cdaysrate = %f\n", nCoinDaysRate);
+
     obj.push_back(Pair("stakestats", weight));
 
     obj.push_back(Pair("stakeinterest %",(Value_type)GetProofOfStakeReward(0, GetLastBlockIndex(pindexBest, true)->nBits,
                                                                  GetLastBlockIndex(pindexBest, true)->nTime, true) / 10000));
+    printf("TACA ===> getmininginfo, stakeinterest = %lld\n", GetProofOfStakeReward(0, GetLastBlockIndex(pindexBest, true)->nBits,
+            												GetLastBlockIndex(pindexBest, true)->nTime, true) / 10000);
+
     obj.push_back(Pair("testnet",       fTestNet));
+    printf("TACA ===> getmininginfo, testnet = %d\n", fTestNet);
 
     // WM - Tweaks to report current Nfactor and N.
     unsigned char 
@@ -185,9 +219,16 @@ Value getmininginfo(const Array& params, bool fHelp)
     N = 1 << ( Nfactor + 1 );
 #endif    
     obj.push_back( Pair( "Nfactor", Nfactor ) );
+    printf("TACA ===> getmininginfo, Nfactor = %d\n", Nfactor);
+
     obj.push_back( Pair( "N", (Value_type)N ) );
+    printf("TACA ===> getmininginfo, N = %lld\n", N);
+
     obj.push_back( Pair( "Epoch Interval", (Value_type)nEpochInterval ) );
+    printf("TACA ===> getmininginfo, nEpochInterval = %d\n", nEpochInterval);
+
     obj.push_back( Pair( "Difficulty Interval", (Value_type)nDifficultyInterval ) );
+    printf("TACA ===> getmininginfo, nDifficultyInterval = %d\n", nDifficultyInterval);
 
     return obj;
 }

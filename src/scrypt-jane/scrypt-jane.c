@@ -139,7 +139,12 @@ scrypt_alloc(uint64_t size)
 	aa.mem = (uint8_t *)malloc((size_t)size);
 	aa.ptr = (uint8_t *)(((size_t)aa.mem + (SCRYPT_BLOCK_BYTES - 1)) & ~(SCRYPT_BLOCK_BYTES - 1));
 	if (!aa.mem)
+	{
+		char sizeStr[256] = "";
+		sprintf(sizeStr, "TACA ===> scrypt_alloc, sizeStr = %lld \n", size);
+		scrypt_fatal_error(sizeStr);
 		scrypt_fatal_error("scrypt: out of memory");
+	}
 	return aa;
 }
 
@@ -205,7 +210,18 @@ scrypt(
 	chunk_bytes = SCRYPT_BLOCK_BYTES * r * 2;
     V = scrypt_alloc((uint64_t)N * chunk_bytes);
 	YX = scrypt_alloc((p + 1) * chunk_bytes);
-
+	if (!V.mem)
+	{
+		char sizeStr[256] = "";
+		sprintf(sizeStr, "TACA ===> scrypt, !V.mem, N = %ld, chunk_bytes = %ld\n", N, chunk_bytes);
+		scrypt_fatal_error(sizeStr);
+	}
+	if (!YX.mem)
+	{
+		char sizeStr[256] = "";
+		sprintf(sizeStr, "TACA ===> scrypt, !YX.mem, p = %ld, chunk_bytes = %ld\n", p, chunk_bytes);
+		scrypt_fatal_error(sizeStr);
+	}
 	/* 1: X = PBKDF2(password, salt) */
 	Y = YX.ptr;
 	X = Y + chunk_bytes;
