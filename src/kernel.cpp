@@ -547,12 +547,12 @@ bool CheckStakeKernelHash(
             "modifier=0x%016" PRIx64 " "
             "nTimeBlockFrom=%u "
             "nTxPrevOffset=%u "
-            "nTimeTxPrev=%u "
+            "nTimeTxPrev=%" PRId64 " "
             "nPrevout=%u "
             "nTimeTx=%u "
             "hashProof=%s"
             "\n",
-            "0.3",
+            // "0.3",       // since it's NFD why print it?
             nStakeModifier,
             nTimeBlockFrom, 
             nTxPrevOffset, 
@@ -582,16 +582,16 @@ bool CheckStakeKernelHash(
             mapBlockIndex[blockFrom.GetHash()]->nHeight,
             DateTimeStrFormat(blockFrom.GetBlockTime()).c_str());
         printf(
-            "CheckStakeKernelHash () : pass protocol=%s "
+            "CheckStakeKernelHash () : " // pass protocol=%s "
             "modifier=0x%016" PRIx64 " "
             "nTimeBlockFrom=%u "
             "nTxPrevOffset=%u "
-            "nTimeTxPrev=%u "
+            "nTimeTxPrev=%" PRIu64 " "
             "nPrevout=%u "
             "nTimeTx=%u "
             "hashProof=%s"
             "\n",
-            "0.3",
+            // "0.3",       // since it's not defined anywhere! as anything!, why print it!!
             nStakeModifier,
             nTimeBlockFrom, 
             nTxPrevOffset, 
@@ -692,12 +692,16 @@ bool CheckStakeKernelHash(
 
     if (fPrintProofOfStake)
     {
-        printf("CheckStakeKernelHash () : using modifier 0x%016" PRIx64 " at height=%d timestamp=%s for block from height=%d timestamp=%s\n",
+        printf("CheckStakeKernelHash () : using modifier 0x%016" PRIx64 
+            " at height=%d timestamp=%s for block from height=%d timestamp=%s\n",
             nStakeModifier, nStakeModifierHeight,
             DateTimeStrFormat(nStakeModifierTime).c_str(),
             mapBlockIndex[hashBlockFrom]->nHeight,
             DateTimeStrFormat(blockFrom.GetBlockTime()).c_str());
-        printf("CheckStakeKernelHash () : check modifier=0x%016" PRIx64 " nTimeBlockFrom=%u nTxPrevOffset=%u nTimeTxPrev=%u nPrevout=%u nTimeTx=%u hashProof=%s\n",
+        printf(
+            "CheckStakeKernelHash () : check modifier=0x%016" PRIx64 
+            "nTimeBlockFrom=%u nTxPrevOffset=%u nTimeTxPrev=%" PRId64
+            "nPrevout=%u nTimeTx=%u hashProof=%s\n",
             nStakeModifier,
             nTimeBlockFrom, nTxPrevOffset, txPrev.nTime, prevout.COutPointGet_n(), nTimeTx,
             hashProofOfStake.ToString().c_str());
@@ -727,7 +731,7 @@ bool CheckStakeKernelHash(
             "CheckStakeKernelHash () : pass modifier=0x%016" PRIx64 " "
             "nTimeBlockFrom=%u "
             "nTxPrevOffset=%u "
-            "nTimeTxPrev=%u "
+            "nTimeTxPrev=%" PRIu64 " "
             "nPrevout=%u "
             "nTimeTx=%u "
             "hashProof=%s"
@@ -811,16 +815,31 @@ bool ScanForStakeKernelHash(MetaMap &mapMeta, uint32_t nBits, uint32_t nTime, ui
             if (bnTargetProofOfStake >= CBigNum(hashProofOfStake))
             {
                 if (fDebug)
-                    printf("nStakeModifier=0x%016" PRIx64 ", nBlockTime=%u nTxOffset=%u nTxPrevTime=%u nVout=%u nTimeTx=%u hashProofOfStake=%s Success=true\n",
-                        nStakeModifier, nBlockTime, nTxOffset, pcoin.first->nTime, pcoin.second, nTimeTx, hashProofOfStake.GetHex().c_str());
+                    printf("nStakeModifier=0x%016" PRIx64 
+                           ", nBlockTime=%u nTxOffset=%u nTxPrevTime=%" PRId64 " "
+                           "nVout=%u nTimeTx=%u hashProofOfStake=%s Success=true\n",
+                            nStakeModifier, 
+                            nBlockTime, 
+                            nTxOffset, 
+                            pcoin.first->nTime, 
+                            pcoin.second, 
+                            nTimeTx, 
+                            hashProofOfStake.GetHex().c_str()
+                          );
+
+
 
                 kernelcoin = pcoin;
                 return true;
             }
 
             if (fDebug)
-                printf("nStakeModifier=0x%016" PRIx64 ", nBlockTime=%u nTxOffset=%u nTxPrevTime=%u nTxNumber=%u nTimeTx=%u hashProofOfStake=%s Success=false\n",
-                    nStakeModifier, nBlockTime, nTxOffset, pcoin.first->nTime, pcoin.second, nTimeTx, hashProofOfStake.GetHex().c_str());
+                printf("nStakeModifier=0x%016" PRIx64 
+                       ", nBlockTime=%u nTxOffset=%u nTxPrevTime=%" PRId64 " nTxNumber=%u "
+                       "nTimeTx=%u hashProofOfStake=%s Success=false\n",
+                        nStakeModifier, nBlockTime, nTxOffset, pcoin.first->nTime, pcoin.second,
+                        nTimeTx, hashProofOfStake.GetHex().c_str()
+                      );
         }
     }
 

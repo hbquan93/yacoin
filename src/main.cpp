@@ -1323,7 +1323,7 @@ CBigNum inline GetProofOfStakeLimit(int nHeight, unsigned int nTime)
         // Get reward of current best height block
         if (fGetRewardOfBestHeightBlock)
         {
-            int64_t currentBlockReward = nBlockRewardPrev;
+            ::int64_t currentBlockReward = nBlockRewardPrev;
             if (!nBlockRewardPrev)
             {
                 const CBlockIndex* pindexMoneySupplyBlock =
@@ -3214,7 +3214,7 @@ bool CTransaction::GetCoinAge(CTxDB& txdb, ::uint64_t& nCoinAge) const
         bnCentSecond += CBigNum(nValueIn) * (nTime-txPrev.nTime) / CENT;
 
         if (fDebug && GetBoolArg("-printcoinage"))
-            printf("coin age nValueIn=%" PRId64 " nTimeDiff=%ld bnCentSecond=%s\n", nValueIn, nTime - txPrev.nTime, bnCentSecond.ToString().c_str());
+            printf("coin age nValueIn=%" PRId64 " nTimeDiff=%" PRId64 " bnCentSecond=%s\n", nValueIn, nTime - txPrev.nTime, bnCentSecond.ToString().c_str());
     }
 
     CBigNum bnCoinDay = bnCentSecond * CENT / COIN / (24 * 60 * 60);
@@ -3396,7 +3396,7 @@ bool CBlock::CheckBlock(bool fCheckPOW, bool fCheckMerkleRoot, bool fCheckSig) c
 
         // Check coinstake timestamp
         if (GetBlockTime() != (::int64_t)vtx[1].nTime)
-            return DoS(50, error("CheckBlock () : coinstake timestamp violation nTimeBlock=%" PRId64 " nTimeTx=%ld", GetBlockTime(), vtx[1].nTime));
+            return DoS(50, error("CheckBlock () : coinstake timestamp violation nTimeBlock=%" PRId64 " nTimeTx=%" PRId64, GetBlockTime(), vtx[1].nTime));
 
         // Check timestamp  06/04/2018 missing test in this 0.4.5-0.48 code.  Thanks Joe! ;>
         if (GetBlockTime() > FutureDrift(GetAdjustedTime()))

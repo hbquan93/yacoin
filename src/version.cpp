@@ -5,6 +5,7 @@
 // 0.4.9.02     8/27/2018 reordered CProvider aBTCtoYACProviders[] in price.cpp
 // 0.4.9.03     9/14/2018 allowed testnet solo mining
 // 0.4.9.04     9/28/2018 changed fUseOld044Rules to true for testnet testing of old code
+// 0.5.7.3.01   7/21/2020 fixed many 64bit int printfs to %u, which crashed
 
 #include <string>
 
@@ -19,7 +20,8 @@
                                     // 5 for #define DEBUG_LOCKORDER
                                     // 5 for #define DEBUG_LOCKORDER
                                     // 6     20160 block length
-#define DISPLAY_VERSION_BUILD       2
+#define DISPLAY_VERSION_BUILD       3
+                                    // 2
 #define DISPLAY_VERSION_TESTING     01
 
 const int
