@@ -389,6 +389,7 @@ Value getwork(const Array& params, bool fHelp)
 
     if (params.size() == 0)
     {
+    	printf("TACA ===> getwork, params.size() == 0\n");
         // Update block
         static unsigned int nTransactionsUpdatedLast;
         static CBlockIndex* pindexPrev;
@@ -399,6 +400,7 @@ Value getwork(const Array& params, bool fHelp)
         {
             if (pindexPrev != pindexBest)
             {
+            	printf("TACA ===> getwork, params.size() == 0, Deallocate old blocks\n");
                 // Deallocate old blocks since they're obsolete now
                 mapNewBlock.clear();
                 BOOST_FOREACH(CBlock* pblock, vNewBlock)
@@ -414,6 +416,7 @@ Value getwork(const Array& params, bool fHelp)
             CBlockIndex* pindexPrevNew = pindexBest;
             nStart = GetTime();
 
+            printf("TACA ===> getwork, params.size() == 0, CreateNewBlock\n");
             // Create new block
             pblock = CreateNewBlock(pwalletMain);
             if (!pblock)
@@ -445,13 +448,21 @@ Value getwork(const Array& params, bool fHelp)
 
         Object result;
         result.push_back(Pair("midstate", HexStr(BEGIN(pmidstate), END(pmidstate)))); // deprecated
+        printf("TACA ===> getwork, params.size() == 0, midstate = %s\n", HexStr(BEGIN(pmidstate), END(pmidstate)).c_str());
+
         result.push_back(Pair("data",     HexStr(BEGIN(pdata), END(pdata))));
+        printf("TACA ===> getwork, params.size() == 0, data = %s\n", HexStr(BEGIN(pdata), END(pdata)).c_str());
+
         result.push_back(Pair("hash1",    HexStr(BEGIN(phash1), END(phash1)))); // deprecated
+        printf("TACA ===> getwork, params.size() == 0, hash1 = %s\n", HexStr(BEGIN(phash1), END(phash1)).c_str());
+
         result.push_back(Pair("target",   HexStr(BEGIN(hashTarget), END(hashTarget))));
+        printf("TACA ===> getwork, params.size() == 0, target = %s\n", HexStr(BEGIN(hashTarget), END(hashTarget)).c_str());
         return result;
     }
     else
     {
+    	printf("TACA ===> getwork, params.size() != 0, string = %s\n", params[0].get_str().c_str());
         // Parse parameters
         vector<unsigned char> 
             vchData = ParseHex(params[0].get_str());
@@ -473,11 +484,14 @@ Value getwork(const Array& params, bool fHelp)
         pblock->nTime = pdata->nTime;
         pblock->nNonce = pdata->nNonce;
         pblock->vtx[0].vin[0].scriptSig = mapNewBlock[pdata->hashMerkleRoot].second;
+        printf("TACA ===> getwork, params.size() != 0, pblock->BuildMerkleTree()\n");
         pblock->hashMerkleRoot = pblock->BuildMerkleTree();
 
+        printf("TACA ===> getwork, params.size() != 0, pblock->SignBlock\n");
         if (!pblock->SignBlock(*pwalletMain))
             throw JSONRPCError(-100, "Unable to sign block, wallet locked?");
         
+        printf("TACA ===> getwork, params.size() != 0, CheckWork(pblock, *pwalletMain, reservekey)\n");
         return CheckWork(pblock, *pwalletMain, reservekey);
     }
 }
