@@ -38,7 +38,7 @@ extern "C" {
 static void NORETURN
 scrypt_fatal_error_default(const char *msg) {
 	fprintf(stderr, "%s\n", msg);
-	exit(21);
+	//exit(21);
 }
 
 static scrypt_fatal_errorfn scrypt_fatal_error = scrypt_fatal_error_default;
@@ -207,20 +207,26 @@ scrypt(
 	r = (1 << rfactor);
 	p = (1 << pfactor);
 
+	char sizeStrTmp[256] = "";
+	sprintf(sizeStrTmp, "TACA ===> scrypt, Nfactor = %d, N = %ld, rfactor = %d, r = %ld\n", Nfactor, N, rfactor, r);
+	scrypt_fatal_error(sizeStrTmp);
+
 	chunk_bytes = SCRYPT_BLOCK_BYTES * r * 2;
     V = scrypt_alloc((uint64_t)N * chunk_bytes);
-	YX = scrypt_alloc((p + 1) * chunk_bytes);
 	if (!V.mem)
 	{
 		char sizeStr[256] = "";
 		sprintf(sizeStr, "TACA ===> scrypt, !V.mem, N = %ld, chunk_bytes = %ld\n", N, chunk_bytes);
 		scrypt_fatal_error(sizeStr);
+		exit(21);
 	}
+	YX = scrypt_alloc((p + 1) * chunk_bytes);
 	if (!YX.mem)
 	{
 		char sizeStr[256] = "";
 		sprintf(sizeStr, "TACA ===> scrypt, !YX.mem, p = %ld, chunk_bytes = %ld\n", p, chunk_bytes);
 		scrypt_fatal_error(sizeStr);
+		exit(21);
 	}
 	/* 1: X = PBKDF2(password, salt) */
 	Y = YX.ptr;
