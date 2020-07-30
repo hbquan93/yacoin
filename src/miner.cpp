@@ -782,7 +782,7 @@ void FormatHashBuffers(CBlock* pblock, char* pmidstate, char* pdata, char* phash
             int nVersion;
             uint256 hashPrevBlock;
             uint256 hashMerkleRoot;
-            ::int64_t nTime;
+            unsigned int nTime;
             unsigned int nBits;
             unsigned int nNonce;
         }
@@ -819,6 +819,62 @@ void FormatHashBuffers(CBlock* pblock, char* pmidstate, char* pdata, char* phash
     memcpy(phash1, &tmp.hash1, 64);
 }
 
+void FormatHashBuffers_64bit_nTime(CBlock* pblock, char* pmidstate, char* pdata, char* phash1)
+{
+    //
+    // Pre-build hash buffers
+    //
+    struct
+    {
+        struct unnamed2
+        {
+            int nVersion;
+            uint256 hashPrevBlock;
+            uint256 hashMerkleRoot;
+            ::int64_t nTime;
+            unsigned int nBits;
+            unsigned int nNonce;
+        }
+        block;
+        unsigned char pchPadding0[64];
+        uint256 hash1;
+        unsigned char pchPadding1[64];
+    }
+    tmp;
+    memset(&tmp, 0, sizeof(tmp));
+
+    tmp.block.nVersion       = pblock->nVersion;
+    tmp.block.hashPrevBlock  = pblock->hashPrevBlock;
+    tmp.block.hashMerkleRoot = pblock->hashMerkleRoot;
+    tmp.block.nTime          = pblock->nTime;
+    tmp.block.nBits          = pblock->nBits;
+    tmp.block.nNonce         = pblock->nNonce;
+
+    FormatHashBlocks(&tmp.block, sizeof(tmp.block));
+    FormatHashBlocks(&tmp.hash1, sizeof(tmp.hash1));
+
+    // Byte swap all the input buffer
+    for (uint32_t i = 0; i < sizeof(tmp)/sizeof(uint32_t); ++i)
+  //for (unsigned int i = 0; i < sizeof(tmp)/4; ++i)    // this is only true
+    {                                                   // if an unsigned int
+                                                        // is 32 bits!!?? What
+                                                        // if it is 64 bits???????
+    	if (i == 17) // point to nTime, swap 64-bit
+    	{
+    		((uint64_t *)&tmp)[i] = ByteReverse_64bit(((uint64_t *)&tmp)[i]);
+    		++i;
+    	}
+    	else // swap 32-bit
+    	{
+            ((uint32_t *)&tmp)[i] = ByteReverse(((uint32_t *)&tmp)[i]);
+    	}
+    }
+    // Precalc the first half of the first hash, which stays constant
+    SHA256Transform(pmidstate, &tmp.block, pSHA256InitState);
+
+    memcpy(pdata, &tmp.block, 128);
+    memcpy(phash1, &tmp.hash1, 64);
+}
 
 bool CheckWork(CBlock* pblock, CWallet& wallet, CReserveKey& reservekey)
 {
