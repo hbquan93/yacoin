@@ -545,12 +545,13 @@ Value getwork(const Array& params, bool fHelp)
         if (pblock->nVersion >= VERSION_of_block_for_yac_05x_new)
         {
             pblock->nTime = (pdata->nTime & 0x00000000FFFFFFFF) << 32 | (pdata->nTime & 0xFFFFFFFF00000000) >> 32;
+            pblock->nNonce = pdata->nNonce;
         }
         else
         {
-            pblock->nTime = ((uint32_t *)pdata)[18];
+            pblock->nTime = ((uint32_t *)pdata)[17];
+            pblock->nNonce = ((uint32_t *)pdata)[19];
         }
-        pblock->nNonce = pdata->nNonce;
         pblock->vtx[0].vin[0].scriptSig = mapNewBlock[pdata->hashMerkleRoot].second;
 
         printf("TACA ===> getwork, params.size() != 0, pblock->BuildMerkleTree()\n");
