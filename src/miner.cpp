@@ -179,9 +179,9 @@ CBlock* CreateNewBlock(CWallet* pwallet, bool fProofOfStake)
     {
       //pblock->nVersion = CBlock::VERSION_of_block_for_yac_044_old;
     	// TODO: Need update for mainet
-    	if (nBestHeight > nTestTimeExtensionBlockNumber)
+    	if (pindexGenesisBlock && (nBestHeight + 1) >= nMainnetNewLogicBlockNumber)
     	{
-            pblock->nVersion = VERSION_of_block_for_time_extension;
+            pblock->nVersion = VERSION_of_block_for_yac_05x_new;
     	}
     	else
     	{
@@ -782,7 +782,7 @@ void FormatHashBuffers(CBlock* pblock, char* pmidstate, char* pdata, char* phash
             int nVersion;
             uint256 hashPrevBlock;
             uint256 hashMerkleRoot;
-            ::int64_t nTime;
+            unsigned int nTime;
             unsigned int nBits;
             unsigned int nNonce;
         }
@@ -819,6 +819,62 @@ void FormatHashBuffers(CBlock* pblock, char* pmidstate, char* pdata, char* phash
     memcpy(phash1, &tmp.hash1, 64);
 }
 
+void FormatHashBuffers_64bit_nTime(CBlock* pblock, char* pmidstate, char* pdata, char* phash1)
+{
+    //
+    // Pre-build hash buffers
+    //
+    struct
+    {
+        struct unnamed2
+        {
+            int nVersion;
+            uint256 hashPrevBlock;
+            uint256 hashMerkleRoot;
+            ::int64_t nTime;
+            unsigned int nBits;
+            unsigned int nNonce;
+        }
+        block;
+        unsigned char pchPadding0[64];
+        uint256 hash1;
+        unsigned char pchPadding1[64];
+    }
+    tmp;
+    memset(&tmp, 0, sizeof(tmp));
+
+    tmp.block.nVersion       = pblock->nVersion;
+    tmp.block.hashPrevBlock  = pblock->hashPrevBlock;
+    tmp.block.hashMerkleRoot = pblock->hashMerkleRoot;
+    tmp.block.nTime          = pblock->nTime;
+    tmp.block.nBits          = pblock->nBits;
+    tmp.block.nNonce         = pblock->nNonce;
+
+    FormatHashBlocks(&tmp.block, sizeof(tmp.block));
+    FormatHashBlocks(&tmp.hash1, sizeof(tmp.hash1));
+
+    // Byte swap all the input buffer
+    for (uint32_t i = 0; i < sizeof(tmp)/sizeof(uint32_t); ++i)
+  //for (unsigned int i = 0; i < sizeof(tmp)/4; ++i)    // this is only true
+    {                                                   // if an unsigned int
+                                                        // is 32 bits!!?? What
+                                                        // if it is 64 bits???????
+        if (i == 17) // point to nTime, swap 64-bit
+        {
+            ((uint64_t *)&tmp)[i] = ByteReverse_64bit(((uint64_t *)&tmp)[i]);
+            ++i;
+        }
+        else // swap 32-bit
+        {
+            ((uint32_t *)&tmp)[i] = ByteReverse(((uint32_t *)&tmp)[i]);
+        }
+    }
+    // Precalc the first half of the first hash, which stays constant
+    SHA256Transform(pmidstate, &tmp.block, pSHA256InitState);
+
+    memcpy(pdata, &tmp.block, 128);
+    memcpy(phash1, &tmp.hash1, 64);
+}
 
 bool CheckWork(CBlock* pblock, CWallet& wallet, CReserveKey& reservekey)
 {
@@ -932,7 +988,7 @@ void StakeMinter(CWallet *pwallet)
 
     while (true)
     {
-        if (fShutdown)
+        if (fShutdown || (pindexBest && pindexBest->nHeight + 1 >= nMainnetNewLogicBlockNumber))
             return;
 
         while (pwallet->IsLocked())
@@ -1111,10 +1167,10 @@ static void YacoinMiner(CWallet *pwallet)  // here fProofOfStake is always false
         IncrementExtraNonce(pblock.get(), pindexPrev, nExtraNonce);
 
         bool
-            fNotYac1dot0BlockOrTx = true;
-        if( (pindexPrev->nHeight + 1) >= nTestNetNewLogicBlockNumber )
+            fYac1dot0BlockOrTx = false;
+        if( (pindexPrev->nHeight + 1) >= nMainnetNewLogicBlockNumber )
         {
-            fNotYac1dot0BlockOrTx = false;
+        	fYac1dot0BlockOrTx = true;
         }
         printf(
                 "Running YACoinMiner with %" PRIszu " transaction"
@@ -1176,7 +1232,7 @@ static void YacoinMiner(CWallet *pwallet)  // here fProofOfStake is always false
                                             //max_nonce,
                                             nHashesDone,
                                             UBEGIN(result),
-                                            GetNfactor(pblock->nTime, fNotYac1dot0BlockOrTx)
+                                            GetNfactor(pblock->nTime, fYac1dot0BlockOrTx)
                                             , pindexPrev
                                             , &hashTarget
                                          );

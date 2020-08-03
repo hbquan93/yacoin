@@ -555,13 +555,15 @@ bool CTxDB::LoadBlockIndex()
         pindexNew->nBits          = diskindex.nBits;
         pindexNew->nNonce         = diskindex.nNonce;
 
-        if ((pindexNew->nHeight % nEpochInterval == 0) && pindexNew->nHeight >= bestEpochIntervalHeight) {
+        if (pindexNew->nHeight >= bestEpochIntervalHeight &&
+            ((pindexNew->nHeight % nEpochInterval == 0) || (pindexNew->nHeight == nMainnetNewLogicBlockNumber)))
+        {
             bestEpochIntervalHeight = pindexNew->nHeight;
             bestEpochIntervalHash = blockHash;
         }
         // Find the minimum ease (highest difficulty) when starting node
         // It will be used to calculate min difficulty (maximum ease)
-        if (nMinEase > pindexNew->nBits)
+        if ((pindexNew->nHeight >= nMainnetNewLogicBlockNumber) && (nMinEase > pindexNew->nBits))
         {
             nMinEase = pindexNew->nBits;
         }
@@ -689,12 +691,9 @@ bool CTxDB::LoadBlockIndex()
     if (mi != mapBlockIndex.end())
     {
         CBlockIndex* pBestEpochIntervalIndex = (*mi).second;
-        nBlockRewardPrev = (::int64_t)
-            (
-            (pBestEpochIntervalIndex->pprev? pBestEpochIntervalIndex->pprev->nMoneySupply:
-                nSimulatedMOneySupplyAtFork) /
-                nNumberOfBlocksPerYear
-            ) * nInflation;
+        nBlockRewardPrev =
+            (::int64_t)((pBestEpochIntervalIndex->pprev ? pBestEpochIntervalIndex->pprev->nMoneySupply : pBestEpochIntervalIndex->nMoneySupply) /
+                        nNumberOfBlocksPerYear) * nInflation;
     }
     else
     {
@@ -817,11 +816,12 @@ bool CTxDB::LoadBlockIndex()
     #endif
         nCounter = 0;
 #endif
-#ifdef Yac1dot0
-#else
+
         BOOST_FOREACH(const PAIRTYPE(int, CBlockIndex*)& item, vSortedByHeight)
         {
             CBlockIndex* pindex = item.second;
+            if (pindex->nHeight >= nMainnetNewLogicBlockNumber)
+				break;
             pindex->nPosBlockCount = ( pindex->pprev ? pindex->pprev->nPosBlockCount : 0 ) + ( pindex->IsProofOfStake() ? 1 : 0 );
             pindex->nBitsMA = pindex->IsProofOfStake() ? GetProofOfWorkMA(pindex->pprev) : 0;
             pindex->bnChainTrust = (pindex->pprev ? pindex->pprev->bnChainTrust : CBigNum(0)) + pindex->GetBlockTrust();
@@ -842,7 +842,6 @@ bool CTxDB::LoadBlockIndex()
             }
 #endif        
         }
-#endif
     }
 
 #ifdef WIN32

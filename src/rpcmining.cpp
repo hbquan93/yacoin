@@ -175,7 +175,7 @@ Value getmininginfo(const Array& params, bool fHelp)
 
     // WM - Tweaks to report current Nfactor and N.
     unsigned char 
-        Nfactor = GetNfactor(pindexBest->GetBlockTime());
+        Nfactor = GetNfactor(pindexBest->GetBlockTime(), nBestHeight >= nMainnetNewLogicBlockNumber? true : false);
 
     uint64_t 
         N;
@@ -398,7 +398,14 @@ Value getwork(const Array& params, bool fHelp)
         char pmidstate[32];
         char pdata[128];
         char phash1[64];
-        FormatHashBuffers(pblock, pmidstate, pdata, phash1);
+        if (pblock->nVersion >= VERSION_of_block_for_yac_05x_new)
+        {
+        	FormatHashBuffers_64bit_nTime(pblock, pmidstate, pdata, phash1);
+        }
+        else
+        {
+        	FormatHashBuffers(pblock, pmidstate, pdata, phash1);
+        }
 
         uint256 hashTarget = CBigNum().SetCompact(pblock->nBits).getuint256();
 
@@ -429,8 +436,17 @@ Value getwork(const Array& params, bool fHelp)
             return false;
         CBlock* pblock = mapNewBlock[pdata->hashMerkleRoot].first;
 
-        pblock->nTime = pdata->nTime;
-        pblock->nNonce = pdata->nNonce;
+        // Parse nTime based on block version
+        if (pblock->nVersion >= VERSION_of_block_for_yac_05x_new)
+        {
+            pblock->nTime = (pdata->nTime & 0x00000000FFFFFFFF) << 32 | (pdata->nTime & 0xFFFFFFFF00000000) >> 32;
+            pblock->nNonce = pdata->nNonce;
+        }
+        else
+        {
+            pblock->nTime = ((uint32_t *)pdata)[17];
+            pblock->nNonce = ((uint32_t *)pdata)[19];
+        }
         pblock->vtx[0].vin[0].scriptSig = mapNewBlock[pdata->hashMerkleRoot].second;
         pblock->hashMerkleRoot = pblock->BuildMerkleTree();
 
