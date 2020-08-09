@@ -544,7 +544,7 @@ Value getwork(const Array& params, bool fHelp)
         // Parse nTime based on block version
         if (pblock->nVersion >= VERSION_of_block_for_yac_05x_new)
         {
-            pblock->nTime = (pdata->nTime & 0x00000000FFFFFFFF) << 32 | (pdata->nTime & 0xFFFFFFFF00000000) >> 32;
+            pblock->nTime = pdata->nTime;
             pblock->nNonce = pdata->nNonce;
         }
         else

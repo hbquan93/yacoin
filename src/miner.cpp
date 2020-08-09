@@ -859,15 +859,7 @@ void FormatHashBuffers_64bit_nTime(CBlock* pblock, char* pmidstate, char* pdata,
     {                                                   // if an unsigned int
                                                         // is 32 bits!!?? What
                                                         // if it is 64 bits???????
-    	if (i == 17) // point to nTime, swap 64-bit
-    	{
-    		((uint64_t *)&tmp)[i] = ByteReverse_64bit(((uint64_t *)&tmp)[i]);
-    		++i;
-    	}
-    	else // swap 32-bit
-    	{
-            ((uint32_t *)&tmp)[i] = ByteReverse(((uint32_t *)&tmp)[i]);
-    	}
+        ((uint32_t *)&tmp)[i] = ByteReverse(((uint32_t *)&tmp)[i]);
     }
     // Precalc the first half of the first hash, which stays constant
     SHA256Transform(pmidstate, &tmp.block, pSHA256InitState);
