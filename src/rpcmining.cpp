@@ -457,7 +457,7 @@ Value getwork(const Array& params, bool fHelp)
         char phash1[64];
         if (pblock->nVersion >= VERSION_of_block_for_yac_05x_new)
         {
-        	FormatHashBuffers_64bit_nTime(pblock, pmidstate, pdata, phash1);
+        	FormatHashBuffers_64bit_nTime((char*)pblock, pmidstate, pdata, phash1);
         }
         else
         {
@@ -489,6 +489,35 @@ Value getwork(const Array& params, bool fHelp)
 
         result.push_back(Pair("target",   HexStr(BEGIN(hashTarget), END(hashTarget))));
         printf("TACA ===> getwork, params.size() == 0, target = %s\n", HexStr(BEGIN(hashTarget), END(hashTarget)).c_str());
+
+//        struct block_header* new_block_data = (struct block_header*)&pdata[0];
+//        printf("TACA ===> getwork BEFORE,\n"
+//               "params.size() == 0,\n"
+//               "new_block_data->nVersion = %d,\n"
+//               "new_block_data->hashPrevBlock = %s,\n"
+//               "new_block_data->hashMerkleRoot = %s,\n"
+//               "new_block_data->nTime = %lld,\n"
+//               "new_block_data->nBits = %u,\n"
+//               "new_block_data->nNonce = %u\n",
+//               new_block_data->version, new_block_data->prev_block.ToString().c_str(), new_block_data->merkle_root.ToString().c_str(),
+//               new_block_data->timestamp, new_block_data->bits, new_block_data->nonce);
+//
+//        // Byte reverse
+//        for (unsigned int i = 0; i < 128/sizeof( uint32_t ); ++i)
+//      //for (int i = 0; i < 128/4; i++) //really, the limit is sizeof( *pdata ) / sizeof( uint32_t
+//            ((uint32_t *)new_block_data)[i] = ByteReverse(((uint32_t *)new_block_data)[i]);
+//
+//        printf("TACA ===> getwork AFTER,\n"
+//               "params.size() == 0,\n"
+//               "new_block_data->nVersion = %d,\n"
+//               "new_block_data->hashPrevBlock = %s,\n"
+//               "new_block_data->hashMerkleRoot = %s,\n"
+//               "new_block_data->nTime = %lld,\n"
+//               "new_block_data->nBits = %u,\n"
+//               "new_block_data->nNonce = %u\n",
+//               new_block_data->version, new_block_data->prev_block.ToString().c_str(), new_block_data->merkle_root.ToString().c_str(),
+//               new_block_data->timestamp, new_block_data->bits, new_block_data->nonce);
+
         return result;
     }
     else
@@ -504,7 +533,7 @@ Value getwork(const Array& params, bool fHelp)
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter");
         }
 
-        CBlock* pdata = (CBlock*)&vchData[0];
+        struct block_header* pdata = (struct block_header*)&vchData[0];
         printf("TACA ===> getwork BEFORE,\n"
                "params.size() != 0,\n"
                "pdata->nVersion = %d,\n"
@@ -513,8 +542,8 @@ Value getwork(const Array& params, bool fHelp)
                "pdata->nTime = %lld,\n"
                "pdata->nBits = %u,\n"
                "pdata->nNonce = %u\n",
-               pdata->nVersion, pdata->hashPrevBlock.ToString().c_str(), pdata->hashMerkleRoot.ToString().c_str(),
-               pdata->nTime, pdata->nBits, pdata->nNonce);
+               pdata->version, pdata->prev_block.ToString().c_str(), pdata->merkle_root.ToString().c_str(),
+               pdata->timestamp, pdata->bits, pdata->nonce);
 
         // Byte reverse
         for (unsigned int i = 0; i < 128/sizeof( uint32_t ); ++i)
@@ -529,30 +558,30 @@ Value getwork(const Array& params, bool fHelp)
                "pdata->nTime = %lld,\n"
                "pdata->nBits = %u,\n"
                "pdata->nNonce = %u\n",
-               pdata->nVersion, pdata->hashPrevBlock.ToString().c_str(), pdata->hashMerkleRoot.ToString().c_str(),
-               pdata->nTime, pdata->nBits, pdata->nNonce);
+               pdata->version, pdata->prev_block.ToString().c_str(), pdata->merkle_root.ToString().c_str(),
+               pdata->timestamp, pdata->bits, pdata->nonce);
 
         // Get saved block
-        if (!mapNewBlock.count(pdata->hashMerkleRoot))
+        if (!mapNewBlock.count(pdata->merkle_root))
         {
         	printf("TACA ===> getwork, params.size() != 0, No saved block\n");
             return false;
         }
 
-        CBlock* pblock = mapNewBlock[pdata->hashMerkleRoot].first;
+        CBlock* pblock = mapNewBlock[pdata->merkle_root].first;
 
         // Parse nTime based on block version
         if (pblock->nVersion >= VERSION_of_block_for_yac_05x_new)
         {
-            pblock->nTime = pdata->nTime;
-            pblock->nNonce = pdata->nNonce;
+            pblock->nTime = pdata->timestamp;
+            pblock->nNonce = pdata->nonce;
         }
         else
         {
             pblock->nTime = ((uint32_t *)pdata)[17];
             pblock->nNonce = ((uint32_t *)pdata)[19];
         }
-        pblock->vtx[0].vin[0].scriptSig = mapNewBlock[pdata->hashMerkleRoot].second;
+        pblock->vtx[0].vin[0].scriptSig = mapNewBlock[pdata->merkle_root].second;
 
         printf("TACA ===> getwork, params.size() != 0, pblock->BuildMerkleTree()\n");
         pblock->hashMerkleRoot = pblock->BuildMerkleTree();

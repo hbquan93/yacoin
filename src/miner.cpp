@@ -819,23 +819,14 @@ void FormatHashBuffers(CBlock* pblock, char* pmidstate, char* pdata, char* phash
     memcpy(phash1, &tmp.hash1, 64);
 }
 
-void FormatHashBuffers_64bit_nTime(CBlock* pblock, char* pmidstate, char* pdata, char* phash1)
+void FormatHashBuffers_64bit_nTime(char* pblock, char* pmidstate, char* pdata, char* phash1)
 {
     //
     // Pre-build hash buffers
     //
     struct
     {
-        struct unnamed2
-        {
-            int nVersion;
-            uint256 hashPrevBlock;
-            uint256 hashMerkleRoot;
-            ::int64_t nTime;
-            unsigned int nBits;
-            unsigned int nNonce;
-        }
-        block;
+    	struct block_header block;
         unsigned char pchPadding0[64];
         uint256 hash1;
         unsigned char pchPadding1[64];
@@ -843,12 +834,9 @@ void FormatHashBuffers_64bit_nTime(CBlock* pblock, char* pmidstate, char* pdata,
     tmp;
     memset(&tmp, 0, sizeof(tmp));
 
-    tmp.block.nVersion       = pblock->nVersion;
-    tmp.block.hashPrevBlock  = pblock->hashPrevBlock;
-    tmp.block.hashMerkleRoot = pblock->hashMerkleRoot;
-    tmp.block.nTime          = pblock->nTime;
-    tmp.block.nBits          = pblock->nBits;
-    tmp.block.nNonce         = pblock->nNonce;
+    char *pblockData = (char *) &tmp.block;
+    memcpy((void *)pblockData, (const void*)pblock, 68);
+    memcpy((void *)(pblockData + 68), (const void*)(pblock+72), 16);
 
     FormatHashBlocks(&tmp.block, sizeof(tmp.block));
     FormatHashBlocks(&tmp.hash1, sizeof(tmp.hash1));
@@ -861,6 +849,7 @@ void FormatHashBuffers_64bit_nTime(CBlock* pblock, char* pmidstate, char* pdata,
                                                         // if it is 64 bits???????
         ((uint32_t *)&tmp)[i] = ByteReverse(((uint32_t *)&tmp)[i]);
     }
+    //tmp.block.nTime = (tmp.block.nTime & 0x00000000FFFFFFFF) << 32 | (tmp.block.nTime & 0xFFFFFFFF00000000) >> 32;
     // Precalc the first half of the first hash, which stays constant
     SHA256Transform(pmidstate, &tmp.block, pSHA256InitState);
 
