@@ -866,7 +866,21 @@ bool CheckWork(CBlock* pblock, CWallet& wallet, CReserveKey& reservekey)
         return error("CheckWork () : %s is not a proof-of-work block", hashBlock.GetHex().c_str());
 
     if (hashBlock > hashTarget)
+    {
+	    printf("TACA ===> CheckWork \n"
+	           "pblock->nVersion = %d,\n"
+	           "pblock->hashPrevBlock = %s,\n"
+	           "pblock->hashMerkleRoot = %s,\n"
+	           "pblock->nTime = %lld,\n"
+	           "pblock->nBits = %u,\n"
+	           "pblock->nNonce = %u\n"
+	    	   "block hash = %s\n"
+	    	   "block target = %s\n",
+	           pblock->nVersion, pblock->hashPrevBlock.GetHex().c_str(), pblock->hashMerkleRoot.GetHex().c_str(),
+	           pblock->nTime, pblock->nBits, pblock->nNonce,
+			   hashBlock.GetHex().c_str(), hashTarget.GetHex().c_str());
         return error("CheckWork () : proof-of-work not meeting target");
+    }
 
     //// debug print
     printf(
