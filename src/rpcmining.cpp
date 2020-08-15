@@ -145,33 +145,67 @@ Value getmininginfo(const Array& params, bool fHelp)
 
     Object obj, diff, weight;
     obj.push_back(Pair("blocks",        (int)nBestHeight));
+    printf("TACA ===> getmininginfo, nBestHeight = %d\n", nBestHeight);
+
     obj.push_back(Pair("currentblocksize",(Value_type)nLastBlockSize));
+    printf("TACA ===> getmininginfo, nLastBlockSize = %lld\n", nLastBlockSize);
+
     obj.push_back(Pair("currentblocktx",(Value_type)nLastBlockTx));
+    printf("TACA ===> getmininginfo, nLastBlockTx = %lld\n", nLastBlockTx);
 
     diff.push_back(Pair("proof-of-work",        GetDifficulty()));
+    printf("TACA ===> getmininginfo, proof-of-work = %f\n", GetDifficulty());
+
     diff.push_back(Pair("proof-of-stake",       GetDifficulty(GetLastBlockIndex(pindexBest, true))));
+    printf("TACA ===> getmininginfo, proof-of-stake = %f\n", GetDifficulty(GetLastBlockIndex(pindexBest, true)));
+
     diff.push_back(Pair("search-interval",      (Value_type)nLastCoinStakeSearchInterval));
+    printf("TACA ===> getmininginfo, search-interval = %u\n", nLastCoinStakeSearchInterval);
+
     obj.push_back(Pair("difficulty",    diff));
 
     // YACOIN TODO - May need to re-enable blockvalue if used in any custom api's
     // obj.push_back(Pair("blockvalue",    (uint64_t)GetProofOfWorkReward(GetLastBlockIndex(pindexBest, false)->nBits)));
     // WM - Report current Proof-of-Work block reward.
     obj.push_back(Pair("powreward", (Value_type)GetProofOfWorkReward(GetLastBlockIndex(pindexBest, false)->nBits, 0, true) / 1000000.0));
+    printf("TACA ===> getmininginfo, powreward = %lld\n", GetProofOfWorkReward(GetLastBlockIndex(pindexBest, false)->nBits, 0, true) / 1000000.0);
+
     obj.push_back(Pair("netmhashps",     GetPoWMHashPS()));
+    printf("TACA ===> getmininginfo, netmhashps = %f\n",  GetPoWMHashPS());
+
     obj.push_back(Pair("netstakeweight", GetPoSKernelPS()));
+    printf("TACA ===> getmininginfo, netstakeweight = %f\n", GetPoSKernelPS());
+
     obj.push_back(Pair("errors",        GetWarnings("statusbar")));
+    printf("TACA ===> getmininginfo, GetWarnings(statusbar) = %s\n", GetWarnings("statusbar").c_str());
+
     obj.push_back(Pair("generate",      GetBoolArg("-gen")));
+    printf("TACA ===> getmininginfo, generate = %d\n",  GetBoolArg("-gen"));
+
     obj.push_back(Pair("genproclimit",  (int)GetArg("-genproclimit", -1)));
+    printf("TACA ===> getmininginfo, genproclimit = %lld\n", GetArg("-genproclimit", -1));
+
     obj.push_back(Pair("hashespersec",  gethashespersec(params, false)));
+    printf("TACA ===> getmininginfo, hashespersec\n");
+
     obj.push_back(Pair("pooledtx",      (Value_type)mempool.size()));
+    printf("TACA ===> getmininginfo, pooledtx = %lld\n", mempool.size());
 
     weight.push_back(Pair("kernelsrate",   nKernelsRate));
+    printf("TACA ===> getmininginfo, kernelsrate = %f\n", nKernelsRate);
+
     weight.push_back(Pair("cdaysrate",   nCoinDaysRate));
+    printf("TACA ===> getmininginfo, cdaysrate = %f\n", nCoinDaysRate);
+
     obj.push_back(Pair("stakestats", weight));
 
     obj.push_back(Pair("stakeinterest %",(Value_type)GetProofOfStakeReward(0, GetLastBlockIndex(pindexBest, true)->nBits,
                                                                  GetLastBlockIndex(pindexBest, true)->nTime, true) / 10000));
+    printf("TACA ===> getmininginfo, stakeinterest = %lld\n", GetProofOfStakeReward(0, GetLastBlockIndex(pindexBest, true)->nBits,
+            												GetLastBlockIndex(pindexBest, true)->nTime, true) / 10000);
+
     obj.push_back(Pair("testnet",       fTestNet));
+    printf("TACA ===> getmininginfo, testnet = %d\n", fTestNet);
 
     // WM - Tweaks to report current Nfactor and N.
     unsigned char 
@@ -185,9 +219,16 @@ Value getmininginfo(const Array& params, bool fHelp)
     N = 1 << ( Nfactor + 1 );
 #endif    
     obj.push_back( Pair( "Nfactor", Nfactor ) );
+    printf("TACA ===> getmininginfo, Nfactor = %d\n", Nfactor);
+
     obj.push_back( Pair( "N", (Value_type)N ) );
+    printf("TACA ===> getmininginfo, N = %lld\n", N);
+
     obj.push_back( Pair( "Epoch Interval", (Value_type)nEpochInterval ) );
+    printf("TACA ===> getmininginfo, nEpochInterval = %d\n", nEpochInterval);
+
     obj.push_back( Pair( "Difficulty Interval", (Value_type)nDifficultyInterval ) );
+    printf("TACA ===> getmininginfo, nDifficultyInterval = %d\n", nDifficultyInterval);
 
     return obj;
 }
@@ -335,11 +376,11 @@ Value getwork(const Array& params, bool fHelp)
             "  \"target\" : little endian hash target\n"
             "If [data] is specified, tries to solve the block and returns true if it was successful.");
 
-    if (vNodes.empty())
-        throw JSONRPCError(RPC_CLIENT_NOT_CONNECTED, "Yacoin is not connected!");
-
-    if (IsInitialBlockDownload())
-        throw JSONRPCError(RPC_CLIENT_IN_INITIAL_DOWNLOAD, "Yacoin is downloading blocks...");
+//    if (vNodes.empty())
+//        throw JSONRPCError(RPC_CLIENT_NOT_CONNECTED, "Yacoin is not connected!");
+//
+//    if (IsInitialBlockDownload())
+//        throw JSONRPCError(RPC_CLIENT_IN_INITIAL_DOWNLOAD, "Yacoin is downloading blocks...");
 
     typedef map<uint256, pair<CBlock*, CScript> > mapNewBlock_t;
     static mapNewBlock_t mapNewBlock;    // FIXME: thread safety
@@ -348,6 +389,7 @@ Value getwork(const Array& params, bool fHelp)
 
     if (params.size() == 0)
     {
+    	printf("TACA ===> getwork, params.size() == 0\n");
         // Update block
         static unsigned int nTransactionsUpdatedLast;
         static CBlockIndex* pindexPrev;
@@ -358,6 +400,7 @@ Value getwork(const Array& params, bool fHelp)
         {
             if (pindexPrev != pindexBest)
             {
+            	printf("TACA ===> getwork, params.size() == 0, Deallocate old blocks\n");
                 // Deallocate old blocks since they're obsolete now
                 mapNewBlock.clear();
                 BOOST_FOREACH(CBlock* pblock, vNewBlock)
@@ -373,10 +416,14 @@ Value getwork(const Array& params, bool fHelp)
             CBlockIndex* pindexPrevNew = pindexBest;
             nStart = GetTime();
 
+            printf("TACA ===> getwork, params.size() == 0, CreateNewBlock\n");
             // Create new block
             pblock = CreateNewBlock(pwalletMain);
             if (!pblock)
+            {
+            	printf("TACA ===> getwork, params.size() == 0, Out of memory\n");
                 throw JSONRPCError(RPC_OUT_OF_MEMORY, "Out of memory");
+            }
             vNewBlock.push_back(pblock);
 
             // Need to update only after we know CreateNewBlock succeeded
@@ -394,49 +441,156 @@ Value getwork(const Array& params, bool fHelp)
         // Save
         mapNewBlock[pblock->hashMerkleRoot] = make_pair(pblock, pblock->vtx[0].vin[0].scriptSig);
 
+        printf("TACA ===> getwork,\n"
+               "params.size() == 0,\n"
+               "pblock->nVersion = %d,\n"
+               "pblock->hashPrevBlock = %s,\n"
+               "pblock->hashMerkleRoot = %s,\n"
+               "pblock->nTime = %lld,\n"
+               "pblock->nBits = %u,\n"
+               "pblock->nNonce = %u\n",
+               pblock->nVersion, pblock->hashPrevBlock.ToString().c_str(), pblock->hashMerkleRoot.ToString().c_str(),
+               pblock->nTime, pblock->nBits, pblock->nNonce);
         // Pre-build hash buffers
         char pmidstate[32];
         char pdata[128];
         char phash1[64];
-        FormatHashBuffers(pblock, pmidstate, pdata, phash1);
+        if (pblock->nVersion >= VERSION_of_block_for_yac_05x_new)
+        {
+        	FormatHashBuffers_64bit_nTime((char*)pblock, pmidstate, pdata, phash1);
+        }
+        else
+        {
+        	FormatHashBuffers(pblock, pmidstate, pdata, phash1);
+        }
+
+//        printf("TACA ===> getwork AFTER,\n"
+//               "params.size() == 0,\n"
+//               "pblock->nVersion = %d,\n"
+//               "pblock->hashPrevBlock = %s,\n"
+//               "pblock->hashMerkleRoot = %s,\n"
+//               "pblock->nTime = %lld,\n"
+//               "pblock->nBits = %u,\n"
+//               "pblock->nNonce = %u\n",
+//               pblock->nVersion, pblock->hashPrevBlock.ToString().c_str(), pblock->hashMerkleRoot.ToString().c_str(),
+//               pblock->nTime, pblock->nBits, pblock->nNonce);
 
         uint256 hashTarget = CBigNum().SetCompact(pblock->nBits).getuint256();
 
         Object result;
         result.push_back(Pair("midstate", HexStr(BEGIN(pmidstate), END(pmidstate)))); // deprecated
+        printf("TACA ===> getwork, params.size() == 0, midstate = %s\n", HexStr(BEGIN(pmidstate), END(pmidstate)).c_str());
+
         result.push_back(Pair("data",     HexStr(BEGIN(pdata), END(pdata))));
+        printf("TACA ===> getwork, params.size() == 0, data = %s\n", HexStr(BEGIN(pdata), END(pdata)).c_str());
+
         result.push_back(Pair("hash1",    HexStr(BEGIN(phash1), END(phash1)))); // deprecated
+        printf("TACA ===> getwork, params.size() == 0, hash1 = %s\n", HexStr(BEGIN(phash1), END(phash1)).c_str());
+
         result.push_back(Pair("target",   HexStr(BEGIN(hashTarget), END(hashTarget))));
+        printf("TACA ===> getwork, params.size() == 0, target = %s\n", HexStr(BEGIN(hashTarget), END(hashTarget)).c_str());
+
+//        struct block_header* new_block_data = (struct block_header*)&pdata[0];
+//        printf("TACA ===> getwork BEFORE,\n"
+//               "params.size() == 0,\n"
+//               "new_block_data->nVersion = %d,\n"
+//               "new_block_data->hashPrevBlock = %s,\n"
+//               "new_block_data->hashMerkleRoot = %s,\n"
+//               "new_block_data->nTime = %lld,\n"
+//               "new_block_data->nBits = %u,\n"
+//               "new_block_data->nNonce = %u\n",
+//               new_block_data->version, new_block_data->prev_block.ToString().c_str(), new_block_data->merkle_root.ToString().c_str(),
+//               new_block_data->timestamp, new_block_data->bits, new_block_data->nonce);
+//
+//        // Byte reverse
+//        for (unsigned int i = 0; i < 128/sizeof( uint32_t ); ++i)
+//      //for (int i = 0; i < 128/4; i++) //really, the limit is sizeof( *pdata ) / sizeof( uint32_t
+//            ((uint32_t *)new_block_data)[i] = ByteReverse(((uint32_t *)new_block_data)[i]);
+//
+//        printf("TACA ===> getwork AFTER,\n"
+//               "params.size() == 0,\n"
+//               "new_block_data->nVersion = %d,\n"
+//               "new_block_data->hashPrevBlock = %s,\n"
+//               "new_block_data->hashMerkleRoot = %s,\n"
+//               "new_block_data->nTime = %lld,\n"
+//               "new_block_data->nBits = %u,\n"
+//               "new_block_data->nNonce = %u\n",
+//               new_block_data->version, new_block_data->prev_block.ToString().c_str(), new_block_data->merkle_root.ToString().c_str(),
+//               new_block_data->timestamp, new_block_data->bits, new_block_data->nonce);
+
         return result;
     }
     else
     {
+    	printf("TACA ===> getwork, params.size() != 0, string = %s\n", params[0].get_str().c_str());
         // Parse parameters
         vector<unsigned char> 
             vchData = ParseHex(params[0].get_str());
 
         if (vchData.size() != 128)
+        {
+        	printf("TACA ===> getwork, params.size() != 0, Invalid parameter\n");
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter");
-        CBlock* pdata = (CBlock*)&vchData[0];
+        }
+
+        struct block_header* pdata = (struct block_header*)&vchData[0];
+        printf("TACA ===> getwork BEFORE,\n"
+               "params.size() != 0,\n"
+               "pdata->nVersion = %d,\n"
+               "pdata->hashPrevBlock = %s,\n"
+               "pdata->hashMerkleRoot = %s,\n"
+               "pdata->nTime = %lld,\n"
+               "pdata->nBits = %u,\n"
+               "pdata->nNonce = %u\n",
+               pdata->version, pdata->prev_block.ToString().c_str(), pdata->merkle_root.ToString().c_str(),
+               pdata->timestamp, pdata->bits, pdata->nonce);
 
         // Byte reverse
         for (unsigned int i = 0; i < 128/sizeof( uint32_t ); ++i)
       //for (int i = 0; i < 128/4; i++) //really, the limit is sizeof( *pdata ) / sizeof( uint32_t
             ((uint32_t *)pdata)[i] = ByteReverse(((uint32_t *)pdata)[i]);
 
-        // Get saved block
-        if (!mapNewBlock.count(pdata->hashMerkleRoot))
-            return false;
-        CBlock* pblock = mapNewBlock[pdata->hashMerkleRoot].first;
+        printf("TACA ===> getwork AFTER,\n"
+               "params.size() != 0,\n"
+               "pdata->nVersion = %d,\n"
+               "pdata->hashPrevBlock = %s,\n"
+               "pdata->hashMerkleRoot = %s,\n"
+               "pdata->nTime = %lld,\n"
+               "pdata->nBits = %u,\n"
+               "pdata->nNonce = %u\n",
+               pdata->version, pdata->prev_block.ToString().c_str(), pdata->merkle_root.ToString().c_str(),
+               pdata->timestamp, pdata->bits, pdata->nonce);
 
-        pblock->nTime = pdata->nTime;
-        pblock->nNonce = pdata->nNonce;
-        pblock->vtx[0].vin[0].scriptSig = mapNewBlock[pdata->hashMerkleRoot].second;
+        // Get saved block
+        if (!mapNewBlock.count(pdata->merkle_root))
+        {
+        	printf("TACA ===> getwork, params.size() != 0, No saved block\n");
+            return false;
+        }
+
+        CBlock* pblock = mapNewBlock[pdata->merkle_root].first;
+
+        // Parse nTime based on block version
+        if (pblock->nVersion >= VERSION_of_block_for_yac_05x_new)
+        {
+            pblock->nTime = pdata->timestamp;
+            pblock->nNonce = pdata->nonce;
+        }
+        else
+        {
+            pblock->nTime = ((uint32_t *)pdata)[17];
+            pblock->nNonce = ((uint32_t *)pdata)[19];
+        }
+        pblock->vtx[0].vin[0].scriptSig = mapNewBlock[pdata->merkle_root].second;
+
+        printf("TACA ===> getwork, params.size() != 0, pblock->BuildMerkleTree()\n");
         pblock->hashMerkleRoot = pblock->BuildMerkleTree();
 
+        printf("TACA ===> getwork, params.size() != 0, pblock->SignBlock\n");
         if (!pblock->SignBlock(*pwalletMain))
             throw JSONRPCError(-100, "Unable to sign block, wallet locked?");
         
+        printf("TACA ===> getwork, params.size() != 0, CheckWork(pblock, *pwalletMain, reservekey)\n");
         return CheckWork(pblock, *pwalletMain, reservekey);
     }
 }
@@ -482,11 +636,11 @@ Value getblocktemplate(const Array& params, bool fHelp)
     if (strMode != "template")
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid mode");
 
-    if (vNodes.empty())
-        throw JSONRPCError(RPC_CLIENT_NOT_CONNECTED, "Yacoin is not connected!");
-
-    if (IsInitialBlockDownload())
-        throw JSONRPCError(RPC_CLIENT_IN_INITIAL_DOWNLOAD, "Yacoin is downloading blocks...");
+//    if (vNodes.empty())
+//        throw JSONRPCError(RPC_CLIENT_NOT_CONNECTED, "Yacoin is not connected!");
+//
+//    if (IsInitialBlockDownload())
+//        throw JSONRPCError(RPC_CLIENT_IN_INITIAL_DOWNLOAD, "Yacoin is downloading blocks...");
 
     static CReserveKey reservekey(pwalletMain);
 

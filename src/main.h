@@ -1228,6 +1228,17 @@ public:
         if(blockHash == 0 || IsHeaderDifferent())
         {
             blockHash = CalculateHash();
+    	    printf("TACA ===> GetHash \n"
+    	           "pblock->nVersion = %d,\n"
+    	           "pblock->hashPrevBlock = %s,\n"
+    	           "pblock->hashMerkleRoot = %s,\n"
+    	           "pblock->nTime = %lld,\n"
+    	           "pblock->nBits = %u,\n"
+    	           "pblock->nNonce = %u\n"
+    	    	   "blockHash = %s\n",
+    	           nVersion, hashPrevBlock.GetHex().c_str(), hashMerkleRoot.GetHex().c_str(),
+    	           nTime, nBits, nNonce,
+				   blockHash.GetHex().c_str());
             previousBlockHeader.version = nVersion;
             previousBlockHeader.prev_block = hashPrevBlock;
             previousBlockHeader.merkle_root = hashMerkleRoot;
