@@ -24,6 +24,10 @@ using std::vector;
 extern void TxToJSON(const CTransaction& tx, const uint256 hashBlock, json_spirit::Object& entry);
 extern enum Checkpoints::CPMode CheckpointsMode;
 
+#ifdef WIN32
+static string getTime( int nBH );
+#endif
+
 double GetDifficulty(const CBlockIndex* blockindex)
 {
     // Floating point number that is a multiple of the minimum difficulty,
@@ -108,7 +112,7 @@ double GetPoSKernelPS()
     return dStakeKernelsTriedAvg / nStakesTime;
 }
 
-Object blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool fPrintTransactionDetail)
+static Object blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool fPrintTransactionDetail)
 {
     Object result;
     result.push_back(Pair("hash", block.GetHash().GetHex()));
@@ -122,6 +126,9 @@ Object blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool fPri
     result.push_back(Pair("mint", ValueFromAmount(blockindex->nMint)));
     result.push_back(Pair("money supply", ValueFromAmount(blockindex->nMoneySupply)));
     result.push_back(Pair("time", (boost::int64_t)block.GetBlockTime()));
+#ifdef WIN32
+    result.push_back(Pair("time", getTime( blockindex->nHeight )));
+#endif
     result.push_back(Pair("nonce", (boost::uint64_t)block.nNonce));
     result.push_back(Pair("bits", HexBits(block.nBits)));
     result.push_back(Pair("difficulty", GetDifficulty(blockindex)));
@@ -321,21 +328,14 @@ bool
     return fIsGMT;
 }
 # endif
+#endif
 
-Value getcurrentblockandtime(const Array& params, bool fHelp)
+#ifdef WIN32
+static string getTime( int nBH )
 {
-    if (
-        fHelp || 
-        (0 != params.size())
-       )
-        throw runtime_error(
-            "getblockcountt "
-            "Returns the number of blocks in the longest block chain and "
-            "the time of the latest block.  And in local time if different than GMT/UTC."
-                           );
-
     CBlockIndex
-        * pbi = FindBlockByHeight(nBestHeight);
+      //* pbi = FindBlockByHeight(nBestHeight);
+        * pbi = FindBlockByHeight(nBH);
 
     CBlock 
         block;
@@ -473,6 +473,27 @@ Value getcurrentblockandtime(const Array& params, bool fHelp)
     return strS;
 }
 #endif
+
+
+#ifdef WIN32
+Value getcurrentblockandtime(const Array& params, bool fHelp)
+{
+    if (
+        fHelp || 
+        (0 != params.size())
+       )
+        throw runtime_error(
+            "getblockcountt "
+            "Returns the number of blocks in the longest block chain and "
+            "the time of the latest block.  And in local time if different than GMT/UTC."
+                           );
+    string
+        s = getTime( nBestHeight );
+
+    return s;
+}
+#endif
+
 
 Value getdifficulty(const Array& params, bool fHelp)
 {

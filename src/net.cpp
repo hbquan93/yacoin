@@ -38,10 +38,15 @@
 #endif
 
 #ifdef USE_UPNP
+ #ifdef WIN32
+  #include <miniupnpc.h>
+  #include <upnpcommands.h>
+  #include <upnperrors.h>
+ #else
 #include <miniupnpc/miniupnpc.h>
-//#include <miniwget.h> 
 #include <miniupnpc/upnpcommands.h>
 #include <miniupnpc/upnperrors.h>
+ #endif
 #endif
 
 using namespace boost;
@@ -59,8 +64,9 @@ using std::set;
 
 const unsigned int 
     nStakeMaxAge = 90 * nSecondsPerDay,             //60 * 60 * 24 * 90; // 90 days as full weight
-    nOnedayOfAverageBlocks = (nSecondsPerDay / nStakeTargetSpacing)/10;  // the old 144
-    //nOnedayOfAverageBlocks = nSecondsPerDay / nStakeTargetSpacing;  // should be 144 if it's BTC!
+    //nOnedayOfAverageBlocks = (nSecondsPerDay / nStakeTargetSpacing)/10;  // the old 144
+    // <<<<<<<<<<<< test
+    nOnedayOfAverageBlocks = nSecondsPerDay / nStakeTargetSpacing;  // should be 144 if it's BTC!
 unsigned int 
     nStakeMinAge = 30 * nSecondsPerDay,             //60 * 60 * 24 * 30; // 30 days as zero time weight
     nStakeTargetSpacing = 1 * nSecondsperMinute,    //1 * 60; // 1-minute stake spacing
@@ -1022,10 +1028,8 @@ void ThreadSocketHandler2(void* parg)
         //nOneHundredMilliseconds = 100;
     while (true)
     {
-        if( fDebug )
-            (void)printf( "ThreadSocketHandler2 is looping"
-                          "\n"
-                        );
+        //if( fDebug )
+        //    (void)printf( "ThreadSocketHandler2 is looping\n" );
         //
         // Disconnect nodes
         //
@@ -1972,10 +1976,10 @@ void ThreadDumpAddress2(void* parg)
     ++vnThreadsRunning[THREAD_DUMPADDRESS];
     while (!fShutdown)
     {
-        if( fDebug )
-            (void)printf( "ThreadDumpAddress2 is looping"
-                         "\n"
-                        );
+        //if( fDebug )
+        //    (void)printf( "ThreadDumpAddress2 is looping"
+        //                 "\n"
+        //                );
         DumpAddresses();
         --vnThreadsRunning[THREAD_DUMPADDRESS];
         Sleep(1 * nSecondsperMinute * nMillisecondsPerSecond);  // try this arbitrary value
@@ -2120,13 +2124,8 @@ void ThreadOpenConnections2(void* parg)
     while (true)
     {
         if( fDebug )
-        {
-            if( 0== (++nLoopCounter % 10) )
-                (void)printf(
-                             "ThreadOpenConnections2 is looping"
-                             "\n"
-                            );
-        }
+            if( 0== (++nLoopCounter % 100) )
+                (void)printf( ".01 ThreadOpenConnections2 is looping\n" );
         ProcessOneShot();
 
         --vnThreadsRunning[THREAD_OPENCONNECTIONS];
@@ -2351,10 +2350,7 @@ void ThreadOpenAddedConnections2(void* parg)
     for (::uint32_t i = 0; true; ++i)   // for ever
     {
         if( fDebug )
-            (void)printf(
-                         "ThreadOpenAddedConnections2 is looping"
-                         "\n"
-                        );
+            (void)printf( "ThreadOpenAddedConnections2 is looping\n" );
         list<string> lAddresses(0);
         {
             LOCK(cs_vAddedNodes);
@@ -2588,10 +2584,10 @@ void ThreadMessageHandler2(void* parg)
     int nLoopCounter = 0;
     while (!fShutdown)
     {        
-        if( fDebug && nLoopCounter%100 == 0) {
-            printf("ThreadMessageHandler2 is looping\n");
-        }
-        nLoopCounter++;
+        if( fDebug )
+            if( 0 == (++nLoopCounter % 100) )
+                printf(".01 ThreadMessageHandler2 is looping\n");
+
         bool fHaveSyncNode = false;
         vector<CNode*> vNodesCopy;
         {
