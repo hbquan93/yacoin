@@ -12,6 +12,7 @@
 #include <string.h>
 #include <string>
 #include <vector>
+#include <limits>
 
 namespace leveldb {
 
@@ -48,6 +49,17 @@ class FileState {
   }
 
   uint64_t Size() const { return size_; }
+
+// perhaps this will allow it to compile?
+#ifdef WIN32
+# ifndef SIZE_MAX
+#  ifdef __SIZE_MAX__
+#   define SIZE_MAX __SIZE_MAX__
+#  else
+#   define SIZE_MAX std::numeric_limits<size_t>::max()
+#  endif
+# endif
+#endif
 
   Status Read(uint64_t offset, size_t n, Slice* result, char* scratch) const {
     if (offset > size_) {
