@@ -197,13 +197,13 @@ CBlock* CreateNewBlock(CWallet* pwallet, bool fProofOfStake)
     txNew.vin[0].prevout.SetNull();
     txNew.vout.resize(1);
 
-    CReserveKey 
-        reservekey(pwallet);
-
     if (fProofOfStake)
     {
         txNew.vout[0].SetEmpty();
     }
+    CReserveKey 
+        reservekey(pwallet);
+
     txNew.vout[0].scriptPubKey << reservekey.GetReservedKey() << OP_CHECKSIG;
 
     // Add our coinbase tx as first transaction
@@ -224,7 +224,7 @@ CBlock* CreateNewBlock(CWallet* pwallet, bool fProofOfStake)
         * pindexPrev = pindexBest;
 /*********************/
     // ppcoin: if coinstake available add coinstake tx
-    static int64_t 
+    static ::int64_t 
         nLastCoinStakeSearchTime = GetAdjustedTime();  // only initialized at startup
     //CBlockIndex* pindexPrev = pindexBest;
 
@@ -235,8 +235,8 @@ CBlock* CreateNewBlock(CWallet* pwallet, bool fProofOfStake)
         CTransaction 
             txCoinStake;    // uses real time
 
-        int64_t 
-            nSearchTime = (int64_t)txCoinStake.nTime; // search to current time
+        ::int64_t 
+            nSearchTime = (::int64_t)txCoinStake.nTime; // search to current time
 
         if (
             (nSearchTime > nLastCoinStakeSearchTime)

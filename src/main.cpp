@@ -1323,7 +1323,7 @@ CBigNum inline GetProofOfStakeLimit(int nHeight, unsigned int nTime)
         // Get reward of current best height block
         if (fGetRewardOfBestHeightBlock)
         {
-            int64_t currentBlockReward = nBlockRewardPrev;
+            ::int64_t currentBlockReward = nBlockRewardPrev;
             if (!nBlockRewardPrev)
             {
                 const CBlockIndex* pindexMoneySupplyBlock =
@@ -2173,8 +2173,8 @@ bool CheckProofOfWork(uint256 hash, unsigned int nBits)
 {
     CBigNum bnTarget;
     bnTarget.SetCompact(nBits);
-
-    printf("CheckProofOfWork: nBits: %d\n",nBits);
+    if( fDebug )
+        printf("CheckProofOfWork: nBits: %d\n",nBits);
     // Check range
     if (
         (bnTarget <= 0 )
@@ -3214,7 +3214,7 @@ bool CTransaction::GetCoinAge(CTxDB& txdb, ::uint64_t& nCoinAge) const
         bnCentSecond += CBigNum(nValueIn) * (nTime-txPrev.nTime) / CENT;
 
         if (fDebug && GetBoolArg("-printcoinage"))
-            printf("coin age nValueIn=%" PRId64 " nTimeDiff=%ld bnCentSecond=%s\n", nValueIn, nTime - txPrev.nTime, bnCentSecond.ToString().c_str());
+            printf("coin age nValueIn=%" PRId64 " nTimeDiff=%" PRId64 " bnCentSecond=%s\n", nValueIn, nTime - txPrev.nTime, bnCentSecond.ToString().c_str());
     }
 
     CBigNum bnCoinDay = bnCentSecond * CENT / COIN / (24 * 60 * 60);
@@ -3396,7 +3396,7 @@ bool CBlock::CheckBlock(bool fCheckPOW, bool fCheckMerkleRoot, bool fCheckSig) c
 
         // Check coinstake timestamp
         if (GetBlockTime() != (::int64_t)vtx[1].nTime)
-            return DoS(50, error("CheckBlock () : coinstake timestamp violation nTimeBlock=%" PRId64 " nTimeTx=%ld", GetBlockTime(), vtx[1].nTime));
+            return DoS(50, error("CheckBlock () : coinstake timestamp violation nTimeBlock=%" PRId64 " nTimeTx=%" PRId64, GetBlockTime(), vtx[1].nTime));
 
         // Check timestamp  06/04/2018 missing test in this 0.4.5-0.48 code.  Thanks Joe! ;>
         if (GetBlockTime() > FutureDrift(GetAdjustedTime()))
@@ -5763,13 +5763,13 @@ void ProcessMessages(CNode* pfrom)
 
     while (true)
     {
-        // Don't bother if send buffer is too full to respond anyway
-        if (pfrom->vSend.size() >= SendBufferSize())
-            break;
-
         // Scan for message start
         CDataStream::iterator 
-            pstart = search(vRecv.begin(), vRecv.end(), BEGIN(pchMessageStart), END(pchMessageStart));
+            pstart = search(vRecv.begin(), 
+                            vRecv.end(),
+                            BEGIN(pchMessageStart),
+                            END(pchMessageStart)
+                           );
 
         int 
             nHeaderSize = vRecv.GetSerializeSize(CMessageHeader());
@@ -5846,61 +5846,69 @@ void ProcessMessages(CNode* pfrom)
 
         vRecv.ignore(nMessageSize);
 
-        // Process message
-        bool fRet = false;
-        try
-        {
-            {{
-                LOCK(cs_main);
-                fRet = ProcessMessage(pfrom, strCommand, vMsg);
-            }}
-            if (fShutdown)
-                return;
-        }
-        catch (std::ios_base::failure& e)
-        {
-            if (strstr(e.what(), "end of data"))
-            {
-                // Allow exceptions from under-length message on vRecv
-                printf(
-                        "ProcessMessages(%s, %u bytes) : "
-                        "Exception '%s' caught, normally caused by "
-                        "a message being shorter than its stated length"
-                        "\n", 
-                        strCommand.c_str(), 
-                        nMessageSize, 
-                        e.what()
-                      );
-            }
-            else 
-            {
-                if (strstr(e.what(), "size too large"))
+        if ( 0 != pfrom->vSend.size() )
+        {        // Don't bother if send buffer is too full to respond anyway
+            if (pfrom->vSend.size() < SendBufferSize())
+          //if (pfrom->vSend.size() >= SendBufferSize())
+          //      break;
+          //else
+            {    // Process message
+                bool 
+                    fRet = false;
+
+                try
                 {
-                    // Allow exceptions from over-long size
-                    printf(
-                            "ProcessMessages(%s, %u bytes) : Exception '%s' caught\n", 
-                            strCommand.c_str(), 
-                            nMessageSize, 
-                            e.what()
-                          );
+                    {{
+                    LOCK(cs_main);
+                    fRet = ProcessMessage(pfrom, strCommand, vMsg);
+                    }}
+                    if (fShutdown)
+                        return;
                 }
-                else
+                catch (std::ios_base::failure& e)
+                {
+                    if (strstr(e.what(), "end of data"))
+                    {   // Allow exceptions from under-length message on vRecv
+                        printf(
+                                "ProcessMessages(%s, %u bytes) : "
+                                "Exception '%s' caught, normally caused by "
+                                "a message being shorter than its stated length"
+                                "\n", 
+                                strCommand.c_str(), 
+                                nMessageSize, 
+                                e.what()
+                              );
+                    }
+                    else 
+                    {
+                        if (strstr(e.what(), "size too large"))
+                        {   // Allow exceptions from over-long size
+                            printf(
+                                    "ProcessMessages(%s, %u bytes) : Exception '%s' caught\n", 
+                                    strCommand.c_str(), 
+                                    nMessageSize, 
+                                    e.what()
+                                  );
+                        }
+                        else
+                        {
+                            PrintExceptionContinue(&e, "ProcessMessages()");
+                        }
+                    }
+                }
+                catch (std::exception& e) 
                 {
                     PrintExceptionContinue(&e, "ProcessMessages()");
+                } 
+                catch (...) 
+                {
+                    PrintExceptionContinue(NULL, "ProcessMessages()");
                 }
+
+                if (!fRet)
+                    printf("ProcessMessage(%s, %u bytes) FAILED\n", strCommand.c_str(), nMessageSize);
             }
         }
-        catch (std::exception& e) 
-        {
-            PrintExceptionContinue(&e, "ProcessMessages()");
-        } 
-        catch (...) 
-        {
-            PrintExceptionContinue(NULL, "ProcessMessages()");
-        }
-
-        if (!fRet)
-            printf("ProcessMessage(%s, %u bytes) FAILED\n", strCommand.c_str(), nMessageSize);
     }
 
     vRecv.Compact();
@@ -6124,7 +6132,7 @@ public:
     #ifdef _DEBUG
                 nUpdatePeriod = 100,
     #else
-                nUpdatePeriod = 3000, //10000,   // pure guess for a decent update period ~1 second
+                nUpdatePeriod = 300, //3000, //10000,   // pure guess for a decent update period ~1 second
     #endif
                 nEstimate;
 

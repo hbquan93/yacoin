@@ -85,7 +85,8 @@ static const int
     VERSION_of_block_for_yac_05x_new = 7,
     VERSION_of_block_for_yac_049     = 6,
     VERSION_of_block_for_yac_044_old = 3,
-    CURRENT_VERSION_of_block = VERSION_of_block_for_yac_049;
+  //CURRENT_VERSION_of_block = VERSION_of_block_for_yac_049;
+    CURRENT_VERSION_of_block = VERSION_of_block_for_yac_044_old;
 
 //static const int
 //    CURRENT_VERSION_previous = VERSION_of_block_for_yac_044_old;
@@ -560,7 +561,7 @@ public:
         }
         else // 32-bit nTime
         {
-			uint32_t time = (uint32_t)nTime; // needed for GetSerializeSize, Serialize function
+            ::uint32_t time = (::uint32_t)nTime; // needed for GetSerializeSize, Serialize function
 			READWRITE(time);
 			nTime = time; // needed for Unserialize function
         }
@@ -781,7 +782,7 @@ public:
         str += IsCoinBase()? "Coinbase" : (IsCoinStake()? "Coinstake" : "CTransaction");
         str += strprintf(
             "(hash=%s, "
-            "nTime=%ld, "
+            "nTime=%" PRId64 ", "
             "ver=%d, "
             "vin.size=%" PRIszu ", "
             "vout.size=%" PRIszu ", "
@@ -1046,7 +1047,7 @@ public:
         }
         else // 32-bit nTime
         {
-               uint32_t time = (uint32_t)nTime; // needed for GetSerializeSize, Serialize function
+               ::uint32_t time = (::uint32_t)nTime; // needed for GetSerializeSize, Serialize function
                READWRITE(time);
                nTime = time; // needed for Unserialize function
         }
@@ -1302,7 +1303,7 @@ public:
             unsigned int nEntropyBit = ((GetHash().Get64()) & 1ULL);
             if (fDebug && GetBoolArg("-printstakemodifier"))
                 printf(
-                        "GetStakeEntropyBit: nTime=%ld \nhashBlock=%s\nnEntropyBit=%u\n",
+                        "GetStakeEntropyBit: nTime=%" PRId64 " \nhashBlock=%s\nnEntropyBit=%u\n",
                         nTime, 
                         GetHash().ToString().c_str(), 
                         nEntropyBit
@@ -1463,7 +1464,7 @@ public:
                 "ver=%d,\n"
                 "hashPrevBlock=%s,\n"
                 "hashMerkleRoot=%s,\n"
-                "nTime=%ld, "
+                "nTime=%" PRId64 ", "
                 "nBits=%08x, "
                 "nNonce=%u, "
                 "vtx=%" PRIszu ",\n"
@@ -1826,7 +1827,7 @@ public:
         }
         else // 32-bit nTime
         {
-            uint32_t time = (uint32_t)nTime; // needed for GetSerializeSize, Serialize function
+            ::uint32_t time = (::uint32_t)nTime; // needed for GetSerializeSize, Serialize function
             READWRITE(time);
             nTime = time; // needed for Unserialize function
         }

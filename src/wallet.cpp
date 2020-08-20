@@ -1952,8 +1952,8 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, int64_t> >& vecSend, 
                 int64_t nMinFee = wtxNew.GetMinFee(nBytes);
 
                 printf("CWallet::CreateTransaction, nBytes = %d, "
-                       "nPayFee = %ld, "
-                       "nMinFee = %ld\n",
+                       "nPayFee = %" PRI64d ", "
+                       "nMinFee = %" PRI64d "\n",
                        nBytes, nPayFee, nMinFee);
                 if (nFeeRet < max(nPayFee, nMinFee))
                 {
@@ -1962,11 +1962,11 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, int64_t> >& vecSend, 
                 }
 
                 printf("CWallet::CreateTransaction, nBytes = %d, "
-                                               "total UTXO value = %ld, "
-                                               "send %ld, "
-                                               "change %ld, "
-                                               "expected fee = %ld, "
-                                               "nFeeRet = %ld\n",
+                                               "total UTXO value = %" PRI64d ", "
+                                               "send %" PRI64d ", "
+                                               "change %" PRI64d ", "
+                                               "expected fee = %" PRI64d ", "
+                                               "nFeeRet = %" PRI64d "\n",
                        nBytes, nValueIn, nValue, nChange, nValueIn - nValue - nChange, nFeeRet);
 
                 // Fill vtxPrev by copying from previous transactions vtxPrev
@@ -2319,7 +2319,7 @@ bool CWallet::CreateCoinStake(
         if (mapMiningStuff.count(txHash)) 
         {            // re-use the block header hash and the kernel stake modifiers
             pMiningStuff = mapMiningStuff[txHash];
-// tbf            block.SetHash(pMiningStuff->hashBlockFrom);
+            // tbf            block.SetHash(pMiningStuff->hashBlockFrom);
         }
         else        // hash is not in the map
         {           // All this takes quite a long time, and only needs to be done once for each input.
@@ -2341,9 +2341,8 @@ bool CWallet::CreateCoinStake(
                 GetKernelStakeModifier(
                                         hashBlockFrom, 
                                         nStakeModifier
-                                        //, 
-                                        //nStakeModifierHeight, 
-                                        //nStakeModifierTime
+                                        , nStakeModifierHeight
+                                        , nStakeModifierTime
                                       )
                ) 
             {
@@ -2617,8 +2616,18 @@ bool CWallet::CreateCoinStake(
                 return false;
 
             {
-                CTxIndex txindex;
-                CBlock block;
+                int 
+                    nStakeModifierHeight = 0;
+
+                ::int64_t
+                    nStakeModifierTime = 0;
+
+                CTxIndex 
+                    txindex;
+
+                CBlock 
+                    block;
+
                 for(CoinsSet::iterator pcoin = setCoins.begin(); pcoin != setCoins.end(); pcoin++)
                 {
                     // Load transaction index item
@@ -2631,7 +2640,14 @@ bool CWallet::CreateCoinStake(
                         continue;
 
                     uint64_t nStakeModifier = 0;
-                    if (!GetKernelStakeModifier(block.GetHash(), nStakeModifier))
+                    if (
+                        !GetKernelStakeModifier(
+                                                block.GetHash(),
+                                                nStakeModifier
+                                                , nStakeModifierHeight
+                                                , nStakeModifierTime
+                                               )
+                       )
                         continue;
 
                     // Add meta record
