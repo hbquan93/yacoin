@@ -85,7 +85,8 @@ static const int
     VERSION_of_block_for_yac_05x_new = 7,
     VERSION_of_block_for_yac_049     = 6,
     VERSION_of_block_for_yac_044_old = 3,
-    CURRENT_VERSION_of_block = VERSION_of_block_for_yac_049;
+  //CURRENT_VERSION_of_block = VERSION_of_block_for_yac_049;
+    CURRENT_VERSION_of_block = VERSION_of_block_for_yac_044_old;
 
 //static const int
 //    CURRENT_VERSION_previous = VERSION_of_block_for_yac_044_old;

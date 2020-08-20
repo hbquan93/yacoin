@@ -199,15 +199,20 @@ endif
 # I built leveldb libraries from the Qt build, which does work!
 
 ifdef USE_LEVELDB
-DEFS += -DUSE_LEVELDB
+ DEFS += -DUSE_LEVELDB
+SOURCES += src/txdb-leveldb.cpp  
+OBJS += obj/txdb-leveldb.o
 leveldb/libleveldb.a:
 	cd leveldb; TARGET_OS=NATIVE_WINDOWS make libleveldb.a libmemenv.a; cd ..
 obj/txdb-leveldb.o	: txdb-leveldb.cpp
-	g++ -c $(CFLAGS) -MMD -o $@ $<
+	$(CXX) -c -frandom-seed=$@ $(CFLAGS) $(INCLUDEPATHS) -o $@ $<
 	@echo TEST LEVELDB $(DEFS)
 else
+SOURCES += src/txdb-bdb.cpp
+OBJS += obj/txdb-bdb.o
 obj/txdb-bdb.o	: txdb-bdb.cpp
-	$(CC) -c $(CFLAGS) -MMD -o $@ $<
+	$(CXX) -c -frandom-seed=$@ $(CFLAGS) $(INCLUDEPATHS) -o $@ $<
+	@echo TEST BDB $(DEFS)	
 endif
 ######################
 

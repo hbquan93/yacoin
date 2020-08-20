@@ -376,10 +376,10 @@ bool CTxDB::LoadBlockIndex()
     const int
 #ifdef Yac1dot0
   #ifdef _DEBUG
-        nREFRESH = 10;    // generally resfresh rates are chosen to give ~1 update/sec
+        nREFRESH = 1000;    // generally resfresh rates are chosen to give ~1 update/sec
   #else
         // seems to be slowing down??
-        nREFRESH = 20;
+        nREFRESH = 10000;
   #endif
 #else
   #ifdef _DEBUG
@@ -781,7 +781,8 @@ bool CTxDB::LoadBlockIndex()
         //vSortedByHeight.resize( mapBlockIndex.size() );
 
         int
-            nUpdatePeriod = 10000;
+            nUpdatePeriod = 50000;  // aiming for ~ 1 update/sec
+
         BOOST_FOREACH(const PAIRTYPE(uint256, CBlockIndex*)& item, mapBlockIndex)
         {
             CBlockIndex
@@ -806,9 +807,9 @@ bool CTxDB::LoadBlockIndex()
         if (fPrintToConsole) 
             (void)printf( "\ndone\nChecking stake checksums...\n" );
     #ifdef _DEBUG
-        nUpdatePeriod /= 4; // speed up update for debug mode
+        nUpdatePeriod /= 20; // speed up update for debug mode
     #else
-        nUpdatePeriod *= 5; // slow down update for release mode
+        nUpdatePeriod /= 2; // slow down update for release mode
     #endif
     #ifdef QT_GUI
         uiInterface.InitMessage( _("done") );

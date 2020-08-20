@@ -91,6 +91,8 @@ const int
 const double
     nInflation = 0.02;      // 2%
 
+extern ::int64_t
+    nUpTimeStart;
 extern const unsigned int 
     nStakeMaxAge,
     nOnedayOfAverageBlocks;
@@ -356,7 +358,7 @@ public:
 
         // Be shy and don't send version until we hear
         if (
-            //(hSocket != INVALID_SOCKET) && // TEST<<<<<<<<<<<<<<<<<<<< 1/16/16
+            (hSocket != INVALID_SOCKET) && // TEST<<<<<<<<<<<<<<<<<<<< 1/16/16
             !fInbound
            )
             PushVersion();

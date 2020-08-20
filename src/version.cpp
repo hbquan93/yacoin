@@ -66,9 +66,14 @@ const std::string
 #define CLIENT_VERSION_SUFFIX   "-bdb"
 #endif
 
-// First, include build.h if requested
-#ifdef HAVE_BUILD_INFO
+#ifndef WIN32
+ // Unfortuneately, Windows gcc build fails here for lack of a build.h!
+ // What is it for anyway?  NFD.  Again!
+
+ // First, include build.h if requested
+# ifdef HAVE_BUILD_INFO
 #    include "build.h"
+# endif
 #endif
 
 //#define BUILD_DESC_INFO(maj,min,rev) 
